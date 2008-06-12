@@ -1,0 +1,106 @@
+Badger
+======
+
+  Badger is a simple Rails plugin that creates photo badges.  A site often
+  allows its users to upload a profile image.  A profile image is just that,
+  an image resized to fit in a predefined space to show up in the user's
+  profile.
+
+  With Badger, you can have something prettier - a badge that shows the user-
+  uploaded image on top of another image that identifies the user as a part of
+  the community.  We have company badges, security badges, so why not web
+  badges to have your users show off his/her affection for your site?
+
+  Badger works by accepting cropping parameters of the overlay image in a hash
+  (x1, y1, width, height), which is used to crop the overlay image.  It then
+  resizes the cropped image to the size specified by composite_width and
+  composite_height in badger.yml.  Finally, it places the resized image on top
+  of the background image at location specified by composite_x and composite_y
+  in badger.yml.  The resulting image is saved back to either the filesystem or
+  Amazon S3, using attachment_fu.
+
+  Badger requires the attachment_fu plugin, ImageMagick, and MiniMagick.  Also,
+  the JavaScript Image Cropper UI can be used to obtain the cropping parameters
+  from the users.
+
+    attachment_fu
+      http://svn.techno-weenie.net/projects/plugins/attachment_fu/
+
+    ImageMagick
+      http://www.imagemagick.org/script/index.php
+
+    MiniMagick
+      http://rubyforge.org/projects/mini-magick/
+
+    JavaScript Image Cropper UI
+      http://www.defusion.org.uk/code/javascript-image-cropper-ui-using-prototype-scriptaculous/
+
+
+Configuration
+=============
+
+  When this plugin is installed , the badger.yml will be copied to the config
+  directory.  You need to specify the following:
+
+    background       : filename of the background image, searching from
+                       public/images
+    composite_x      : top left corner of the overlay image location in x
+    composite_y      : top left corner of the overlay image location in y
+    composite_width  : width of the overlay image in pixels
+    composite_height : height of the overlay image in pixels
+
+  For example, I want to overlay an image on top of a background image
+  (badge.jpg).  The box for the overlay image should be 30 pixels in width and
+  20 pixels in height, and it should appear at (x, y) = (60, 80) of the
+  background image.  My badger.yml then looks like:
+
+    development:
+      background: badge.jpg
+      composite_x: 60
+      composite_y: 80
+      composite_width: 30
+      composite_height: 20
+
+
+Example
+=======
+
+  In the model that you use to store attachments:
+
+    class Photo < ActiveRecord::Base
+      has_attachment :content_type => :image,
+                     :storage => :s3,
+                     :max_size => 1.megabytes,
+                     :resize_to => '320x200>',
+                     :thumbnails => { :thumb => '100x100>' },
+                     :processor => :MiniMagick
+      validates_as_attachment
+      has_badge :storage => :s3
+    end
+
+  In the controller:
+
+    def create_my_awesome_badge
+      @photo = Photo.find(params[:id])
+      # params[:crop_coord] is a hash with indexes x1, y1, width, height
+      @photo.create_badge(params[:crop_coord])
+    end
+
+
+Improvements
+============
+
+  Please feel free to submit patches for bug fixes and improvements.
+  Specifically, I would like to:
+
+    (1) Use something nicer than system("convert blah..."), but couldn't get it
+        to work.  I don't think Minimagick supports compositing images, so
+        RMagick may have to be used, but is it worth the heavy memory
+        consumption?
+
+    (2) Make it more flexible (i.e. accept background image and composite
+        params dynamically instead of in badger.yml).  Maybe pass them in the
+        call to create_badge?
+
+
+Copyright (c) 2008 Raymond Law and Intridea, Inc., released under the MIT license

@@ -1,0 +1,20 @@
+development:
+  background: 
+  composite_x: 
+  composite_y: 
+  composite_width: 
+  composite_height: 
+
+test:
+  background: 
+  composite_x: 
+  composite_y: 
+  composite_width: 
+  composite_height: 
+
+production:
+  background: 
+  composite_x: 
+  composite_y: 
+  composite_width: 
+  composite_height: 

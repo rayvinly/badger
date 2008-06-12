@@ -1,0 +1,6 @@
+test:
+  background: java.png
+  composite_x: 70
+  composite_y: 24
+  composite_width: 37
+  composite_height: 19
